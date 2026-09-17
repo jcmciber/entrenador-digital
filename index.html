@@ -373,6 +373,40 @@ table.exercise-table tr:last-child td{border-bottom:none;}
 }
 .pill-toggle button.active{border-color:var(--sage);background:var(--sage-tint);color:#2F4F37;}
 
+/* Calendar grid view */
+.cal-grid{width:100%;border-collapse:separate;border-spacing:6px;table-layout:fixed;}
+.cal-grid thead th{
+  font-size:.78rem;color:var(--ink-soft);font-weight:700;padding:4px 2px;text-align:center;
+}
+.cal-grid td{vertical-align:top;padding:0;}
+.grid-cell{
+  min-height:78px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--paper-dim);
+  padding:8px 6px;
+  display:flex;flex-direction:column;gap:4px;
+  cursor:default;
+}
+.grid-cell .gc-daynum{font-size:.74rem;color:var(--ink-soft);font-weight:700;}
+.grid-cell.rest{opacity:.55;}
+.grid-cell.rest .gc-daynum{color:var(--ink-soft);}
+.grid-cell.training{cursor:pointer;background:var(--white);border-width:2px;}
+.grid-cell.training:hover{transform:translateY(-1px);box-shadow:var(--shadow);}
+.grid-cell.training.lunes{border-color:var(--pine);}
+.grid-cell.training.miercoles{border-color:var(--ochre);}
+.grid-cell.training.viernes{border-color:var(--sage);}
+.gc-label{font-size:.78rem;font-weight:700;line-height:1.15;}
+.grid-cell.training.lunes .gc-label{color:var(--pine-dark);}
+.grid-cell.training.miercoles .gc-label{color:#7A5A24;}
+.grid-cell.training.viernes .gc-label{color:#2F4F37;}
+.gc-done{margin-left:auto;font-size:.9rem;}
+.gc-deload{font-size:.66rem;font-weight:700;color:#7A5A24;background:var(--ochre-tint);border-radius:6px;padding:1px 5px;align-self:flex-start;}
+.legend-row{display:flex;gap:16px;flex-wrap:wrap;margin:10px 0 4px 0;font-size:.85rem;color:var(--ink-soft);}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle;}
+
+.modal-box-lg{max-width:640px;max-height:85vh;overflow-y:auto;}
+
 .empty-state{
   text-align:center;padding:30px 20px;color:var(--ink-soft);
 }
@@ -431,6 +465,14 @@ table.exercise-table tr:last-child td{border-bottom:none;}
     <h3 id="video-modal-title">Vídeo explicativo</h3>
     <p id="video-modal-desc" style="color:var(--ink-soft);">Se abrirá en una pestaña nueva de YouTube para reproducirlo con comodidad.</p>
     <a class="btn btn-primary btn-block" id="video-modal-link" href="#" target="_blank" rel="noopener">▶ Ver vídeo en YouTube</a>
+  </div>
+</div>
+
+<!-- Session detail modal (used by grid calendar view) -->
+<div class="modal-overlay" id="session-modal">
+  <div class="modal-box modal-box-lg">
+    <button class="modal-close" id="session-modal-close" aria-label="Cerrar">✕</button>
+    <div id="session-modal-content"></div>
   </div>
 </div>
 
@@ -762,6 +804,7 @@ function renderProtocol(blocks, headTitle, headDesc){
 
 /* ====================== VIEW: CALENDAR ====================== */
 let calendarMonth = 1; // 1,2,3
+let calendarViewMode = "grid"; // "grid" (mes completo) | "list" (semana a semana)
 
 function exerciseRow(ex, month, week, day, idx){
   return `
@@ -817,12 +860,23 @@ function renderCalendar(){
   <div class="card" style="margin-bottom:22px;">
     <h2>${monthData.label}</h2>
     <p style="color:var(--ink-soft);">${monthData.range} · ${monthData.intro}</p>
+  </div>
+
+  <div class="pill-toggle">
+    <button data-calview="grid" class="${calendarViewMode==='grid'?'active':''}">🗓️ Vista de calendario (mes completo)</button>
+    <button data-calview="list" class="${calendarViewMode==='list'?'active':''}">📋 Vista semanal (lista detallada)</button>
   </div>`;
 
+  html += calendarViewMode === "grid" ? renderCalendarGrid(monthData) : renderCalendarList(monthData);
+  return html;
+}
+
+function renderCalendarList(monthData){
+  let html = "";
   const weekStart = (calendarMonth-1)*4 + 1;
   for(let w=0; w<4; w++){
     const weekNum = weekStart + w;
-    const isDeload = (w === 3); // week 4 of each mesocycle
+    const isDeload = (w === 3);
     html += `<div class="week-block">
       <div class="week-head">
         <h3>Semana ${weekNum}</h3>
@@ -832,6 +886,95 @@ function renderCalendar(){
     </div>`;
   }
   return html;
+}
+
+const DAY_COL_LABELS = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+const DAY_COL_KEY = ["lunes", null, "miercoles", null, "viernes", null, null]; // index 0=Lun ... 6=Dom
+
+function renderCalendarGrid(monthData){
+  const weekStart = (calendarMonth-1)*4 + 1;
+  let html = `
+  <div class="legend-row">
+    <span><span class="legend-dot" style="background:var(--pine);"></span>Lunes · Fuerza & Calistenia</span>
+    <span><span class="legend-dot" style="background:var(--ochre);"></span>Miércoles · Escalada, Agarre & Core</span>
+    <span><span class="legend-dot" style="background:var(--sage);"></span>Viernes · Atletismo & Resistencia</span>
+  </div>
+  <div class="card">
+  <div style="overflow-x:auto;">
+  <table class="cal-grid">
+    <thead><tr>${DAY_COL_LABELS.map(l=>`<th>${l}</th>`).join("")}</tr></thead>
+    <tbody>`;
+
+  for(let w=0; w<4; w++){
+    const weekNum = weekStart + w;
+    const isDeload = (w === 3);
+    html += `<tr>`;
+    for(let c=0; c<7; c++){
+      const dayKey = DAY_COL_KEY[c];
+      if(dayKey){
+        const dayData = monthData.days[dayKey];
+        const sid = sessionId(calendarMonth, weekNum, dayKey);
+        const isDone = !!progress[sid];
+        html += `<td>
+          <div class="grid-cell training ${dayKey}" data-open-session data-cal-month="${calendarMonth}" data-cal-week="${weekNum}" data-cal-day="${dayKey}" data-cal-deload="${isDeload?1:0}" tabindex="0" role="button" aria-label="${dayData.title}, semana ${weekNum}">
+            <span class="gc-daynum">Sem. ${weekNum}</span>
+            ${isDeload ? `<span class="gc-deload">Descarga</span>` : ""}
+            <span class="gc-label">${dayData.title}</span>
+            ${isDone ? `<span class="gc-done">✔️</span>` : ""}
+          </div>
+        </td>`;
+      } else {
+        html += `<td><div class="grid-cell rest"><span class="gc-daynum">Sem. ${weekNum}</span><span class="gc-label" style="color:var(--ink-soft);font-weight:500;">Descanso / Recuperación activa</span></div></td>`;
+      }
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table></div></div>`;
+  return html;
+}
+
+function sessionDetailHTML(month, week, day, isDeload){
+  const monthData = PROGRAM[month];
+  const dayData = monthData.days[day];
+  return dayCard(day, dayData, month, week, isDeload);
+}
+
+const sessionModal = document.getElementById("session-modal");
+const sessionModalContent = document.getElementById("session-modal-content");
+function openSessionModal(month, week, day, isDeload){
+  sessionModalContent.innerHTML = sessionDetailHTML(month, week, day, isDeload);
+  sessionModal.classList.add("open");
+  attachDayCardHandlers(sessionModalContent);
+}
+document.getElementById("session-modal-close").addEventListener("click", ()=> sessionModal.classList.remove("open"));
+sessionModal.addEventListener("click", (e)=>{ if(e.target === sessionModal) sessionModal.classList.remove("open"); });
+
+function attachDayCardHandlers(root){
+  root.querySelectorAll("[data-video-url]").forEach(btn=>{
+    btn.addEventListener("click", ()=> openVideoModal(btn.dataset.videoName, btn.dataset.videoUrl));
+  });
+  root.querySelectorAll("[data-session]").forEach(chk=>{
+    chk.addEventListener("change", ()=>{
+      progress[chk.dataset.session] = chk.checked;
+      saveJSON(LS_PROGRESS, progress);
+      // reflect completion mark on the grid cell behind the modal, if present
+      const cell = document.querySelector(`[data-open-session][data-cal-month][data-cal-week][data-cal-day]`);
+      document.querySelectorAll("[data-open-session]").forEach(c=>{
+        const sid = sessionId(c.dataset.calMonth, c.dataset.calWeek, c.dataset.calDay);
+        if(sid === chk.dataset.session){
+          let mark = c.querySelector(".gc-done");
+          if(chk.checked && !mark){
+            mark = document.createElement("span");
+            mark.className = "gc-done";
+            mark.textContent = "✔️";
+            c.appendChild(mark);
+          } else if(!chk.checked && mark){
+            mark.remove();
+          }
+        }
+      });
+    });
+  });
 }
 
 /* ====================== VIEW: TRACKER ====================== */
@@ -970,15 +1113,23 @@ function attachCalendarHandlers(root){
       navigateTo("calendar");
     });
   });
-  root.querySelectorAll("[data-video-url]").forEach(btn=>{
-    btn.addEventListener("click", ()=> openVideoModal(btn.dataset.videoName, btn.dataset.videoUrl));
-  });
-  root.querySelectorAll("[data-session]").forEach(chk=>{
-    chk.addEventListener("change", ()=>{
-      progress[chk.dataset.session] = chk.checked;
-      saveJSON(LS_PROGRESS, progress);
+  root.querySelectorAll("[data-calview]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      calendarViewMode = btn.dataset.calview;
+      navigateTo("calendar");
     });
   });
+  root.querySelectorAll("[data-open-session]").forEach(cell=>{
+    const open = ()=> openSessionModal(
+      parseInt(cell.dataset.calMonth,10),
+      parseInt(cell.dataset.calWeek,10),
+      cell.dataset.calDay,
+      cell.dataset.calDeload === "1"
+    );
+    cell.addEventListener("click", open);
+    cell.addEventListener("keydown", (e)=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
+  });
+  attachDayCardHandlers(root);
 }
 
 function attachTrackerHandlers(root){
