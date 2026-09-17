@@ -1,4 +1,4 @@
-const CACHE_NAME = "entrenador-hibrido-v1";
+const CACHE_NAME = "entrenador-hibrido-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -11,7 +11,9 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(APP_SHELL.map((url) => fetch(url, { cache: "reload" }).then((res) => cache.put(url, res)).catch(() => {})))
+    )
   );
   self.skipWaiting();
 });
@@ -25,11 +27,27 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Cache-first for same-origin app shell files; network-first (with cache fallback) for everything else
-// (Google Fonts, Chart.js from cdnjs, YouTube links opened separately).
+// HTML (navigation) requests: network-first, so updates to index.html show up
+// on the next normal load, falling back to the cached shell only when offline.
+// Other same-origin files (manifest, icons): cache-first for speed.
+// Cross-origin (fonts, Chart.js): network-first with cache fallback.
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
+  const isNavigation = req.mode === "navigate" || (req.method === "GET" && req.headers.get("accept")?.includes("text/html"));
+
+  if (url.origin === self.location.origin && isNavigation) {
+    event.respondWith(
+      fetch(req, { cache: "no-store" })
+        .then((res) => {
+          const resClone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
+          return res;
+        })
+        .catch(() => caches.match(req).then((cached) => cached || caches.match("./index.html")))
+    );
+    return;
+  }
 
   if (url.origin === self.location.origin) {
     event.respondWith(
@@ -39,7 +57,7 @@ self.addEventListener("fetch", (event) => {
           const resClone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
           return res;
-        }).catch(() => caches.match("./index.html"));
+        });
       })
     );
   } else {
