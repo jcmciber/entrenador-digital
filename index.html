@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<title>Entrenador Digital Híbrido</title>
+<meta name="description" content="Programa de mantenimiento físico de 12 semanas: calistenia, escalada/agarre y atletismo de bajo impacto.">
+<meta name="theme-color" content="#203F37">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Entren. Híbrido">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root{
+  --paper:#F7F5EF;
+  --paper-dim:#EFEBE1;
+  --ink:#2A2721;
+  --ink-soft:#6B6559;
+  --line:#DED7C6;
+  --pine:#2F5D50;
+  --pine-dark:#203F37;
+  --pine-tint:#E4EEE9;
+  --ochre:#B8863B;
+  --ochre-tint:#F3E7D2;
+  --clay:#C1502E;
+  --clay-tint:#FBE7DF;
+  --sage:#4C7A57;
+  --sage-tint:#E7F1E8;
+  --white:#FFFFFF;
+  --radius-card:14px;
+  --radius-pill:999px;
+  --shadow: 0 1px 2px rgba(42,39,33,.06), 0 4px 14px rgba(42,39,33,.05);
+}
+:root[data-theme="dark"], :root:not([data-theme="light"]) {
+  /* App is intentionally light-mode by design brief (high contrast for 50+), but keep a dark fallback readable */
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1D1B17;
+    --paper-dim:#26241F;
+    --ink:#F1EDE3;
+    --ink-soft:#B7B0A0;
+    --line:#3A362D;
+    --pine-tint:#1E322C;
+    --ochre-tint:#332A18;
+    --clay-tint:#3A241D;
+    --sage-tint:#20301F;
+    --white:#252219;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1D1B17; --paper-dim:#26241F; --ink:#F1EDE3; --ink-soft:#B7B0A0; --line:#3A362D;
+  --pine-tint:#1E322C; --ochre-tint:#332A18; --clay-tint:#3A241D; --sage-tint:#20301F; --white:#252219;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:18px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{
+  font-family:'Newsreader',Georgia,serif;
+  font-weight:600;
+  color:var(--ink);
+  margin:0 0 .4em 0;
+  letter-spacing:-.01em;
+}
+h1{font-size:2rem;}
+h2{font-size:1.55rem;}
+h3{font-size:1.22rem;}
+p{margin:0 0 .8em 0;}
+a{color:var(--pine);}
+button{font-family:inherit;}
+img,svg{max-width:100%;}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+
+/* focus visibility for accessibility */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible{
+  outline:3px solid var(--pine);
+  outline-offset:2px;
+}
+
+/* ---------- App shell ---------- */
+.app-shell{
+  display:flex;
+  min-height:100vh;
+}
+.sidebar{
+  width:264px;
+  flex-shrink:0;
+  background:var(--pine-dark);
+  color:#EFEBE1;
+  padding:28px 18px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 10px 22px 10px;
+  border-bottom:1px solid rgba(255,255,255,.14);
+  margin-bottom:16px;
+}
+.brand-mark{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--ochre);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.brand-text{font-family:'Newsreader',serif;font-weight:600;font-size:1.12rem;line-height:1.2;color:#fff;}
+.brand-text small{display:block;font-family:'Inter',sans-serif;font-weight:500;font-size:.72rem;letter-spacing:.03em;color:#C9CFC3;margin-top:2px;}
+
+.nav-btn{
+  display:flex;align-items:center;gap:12px;
+  width:100%;
+  text-align:left;
+  background:transparent;
+  border:none;
+  color:#DCE4DA;
+  padding:13px 12px;
+  border-radius:10px;
+  font-size:1.02rem;
+  font-weight:500;
+  cursor:pointer;
+  transition:background .15s ease;
+}
+.nav-btn .ic{font-size:1.25rem;width:26px;text-align:center;flex-shrink:0;}
+.nav-btn:hover{background:rgba(255,255,255,.08);}
+.nav-btn.active{background:var(--ochre);color:#241C0E;font-weight:700;}
+
+.main-col{
+  flex:1;
+  min-width:0;
+  padding:32px 40px 100px 40px;
+}
+.view{display:none;}
+.view.active{display:block;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+.page-head{margin-bottom:26px;}
+.page-head .eyebrow{color:var(--ink-soft);font-size:.95rem;margin-bottom:2px;}
+
+/* ---------- Cards ---------- */
+.card{
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow);
+  padding:22px 24px;
+}
+.card + .card{margin-top:18px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+
+/* Medical warning banner */
+.med-banner{
+  display:flex;gap:16px;align-items:flex-start;
+  background:var(--clay-tint);
+  border:1px solid #E7B7A4;
+  border-left:6px solid var(--clay);
+  border-radius:var(--radius-card);
+  padding:20px 22px;
+  margin-bottom:22px;
+}
+.med-banner .ic{font-size:1.8rem;flex-shrink:0;}
+.med-banner h3{color:var(--clay);margin-bottom:.3em;}
+.med-banner ul{margin:.5em 0 0 1.1em;padding:0;}
+.med-banner li{margin-bottom:.25em;}
+
+/* Principle cards */
+.principle-card{border-top:5px solid var(--pine);}
+.principle-card.alt{border-top-color:var(--ochre);}
+.principle-card h3{display:flex;align-items:center;gap:10px;}
+.tag{
+  display:inline-block;
+  font-size:.78rem;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:var(--radius-pill);
+  background:var(--pine-tint);
+  color:var(--pine-dark);
+}
+.tag.ochre{background:var(--ochre-tint);color:#7A5A24;}
+.tag.clay{background:var(--clay-tint);color:#8C3A22;}
+.tag.sage{background:var(--sage-tint);color:#2F4F37;}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;
+  border-radius:12px;
+  padding:14px 22px;
+  font-size:1.02rem;
+  font-weight:700;
+  cursor:pointer;
+  min-height:50px;
+  transition:transform .08s ease, background .15s ease;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--pine);color:#fff;}
+.btn-primary:hover{background:var(--pine-dark);}
+.btn-ochre{background:var(--ochre);color:#241C0E;}
+.btn-ochre:hover{background:#9E6F2C;}
+.btn-outline{background:transparent;color:var(--pine);border:2px solid var(--pine);}
+.btn-outline:hover{background:var(--pine-tint);}
+.btn-sm{padding:10px 16px;font-size:.92rem;min-height:40px;border-radius:10px;}
+.btn-video{background:var(--white);color:var(--pine-dark);border:2px solid var(--pine);}
+.btn-video:hover{background:var(--pine-tint);}
+.btn-block{width:100%;}
+
+/* progress bar */
+.progress-track{
+  background:var(--paper-dim);
+  border-radius:var(--radius-pill);
+  height:16px;
+  overflow:hidden;
+  border:1px solid var(--line);
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--pine),var(--sage));
+  border-radius:var(--radius-pill);
+  transition:width .4s ease;
+}
+
+/* Bottom nav (mobile) */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--white);
+  border-top:1px solid var(--line);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  z-index:40;
+  box-shadow:0 -2px 12px rgba(0,0,0,.06);
+}
+.bottom-nav-inner{display:flex;justify-content:space-around;}
+.bn-btn{
+  background:none;border:none;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  color:var(--ink-soft);
+  font-size:.72rem;
+  font-weight:600;
+  padding:6px 4px;
+  border-radius:10px;
+  flex:1;
+  cursor:pointer;
+}
+.bn-btn .ic{font-size:1.35rem;}
+.bn-btn.active{color:var(--pine-dark);}
+.bn-btn.active .ic{transform:translateY(-1px);}
+
+/* Month tabs (calendar) */
+.month-tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.month-tab{
+  background:var(--white);
+  border:2px solid var(--line);
+  border-radius:var(--radius-pill);
+  padding:11px 20px;
+  font-weight:700;
+  font-size:.98rem;
+  cursor:pointer;
+  color:var(--ink-soft);
+}
+.month-tab.active{border-color:var(--pine);background:var(--pine-tint);color:var(--pine-dark);}
+
+.week-block{margin-bottom:26px;}
+.week-head{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:12px;
+}
+.week-head h3{margin:0;}
+.deload-badge{
+  background:var(--ochre-tint);color:#7A5A24;
+  font-size:.78rem;font-weight:700;
+  padding:4px 12px;border-radius:var(--radius-pill);
+  border:1px solid #E3C88F;
+}
+
+.day-card{border-left:5px solid var(--pine);}
+.day-card.mid{border-left-color:var(--ochre);}
+.day-card.end{border-left-color:var(--sage);}
+.day-card-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  gap:12px;margin-bottom:14px;flex-wrap:wrap;
+}
+.day-card-head h3{margin-bottom:2px;}
+.day-card-head .sub{color:var(--ink-soft);font-size:.94rem;}
+
+.check-row{display:flex;align-items:center;gap:10px;}
+.check-row input[type=checkbox]{width:24px;height:24px;accent-color:var(--sage);cursor:pointer;}
+.check-row label{font-weight:700;font-size:.95rem;color:var(--sage);cursor:pointer;}
+
+table.exercise-table{width:100%;border-collapse:collapse;margin-top:8px;}
+table.exercise-table th{
+  text-align:left;font-size:.82rem;text-transform:none;color:var(--ink-soft);
+  border-bottom:2px solid var(--line);padding:8px 8px;font-weight:700;
+}
+table.exercise-table td{
+  padding:12px 8px;border-bottom:1px solid var(--line);font-size:.98rem;vertical-align:middle;
+}
+table.exercise-table tr:last-child td{border-bottom:none;}
+.ex-name{font-weight:700;}
+.ex-note{color:var(--ink-soft);font-size:.86rem;display:block;margin-top:2px;font-weight:400;}
+
+/* Protocol steps (warmup/cooldown) */
+.protocol-block{margin-bottom:22px;}
+.protocol-block h3{display:flex;align-items:center;gap:10px;}
+.step-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+.step-item{
+  display:flex;gap:14px;align-items:flex-start;
+  background:var(--paper-dim);
+  border-radius:12px;
+  padding:14px 16px;
+}
+.step-check{flex-shrink:0;margin-top:2px;width:24px;height:24px;accent-color:var(--pine);cursor:pointer;}
+.step-body b{display:block;margin-bottom:2px;}
+.step-body span{color:var(--ink-soft);font-size:.92rem;}
+.timer-btn{margin-left:auto;flex-shrink:0;}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(20,18,14,.55);
+  display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:var(--white);border-radius:16px;padding:26px 26px 22px;max-width:440px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.modal-box h3{margin-bottom:10px;}
+.modal-close{float:right;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--ink-soft);line-height:1;}
+
+/* Forms */
+.field{margin-bottom:16px;}
+.field label{display:block;font-weight:700;margin-bottom:6px;font-size:.96rem;}
+.field input, .field select{
+  width:100%;padding:13px 14px;border:2px solid var(--line);border-radius:10px;
+  font-size:1.02rem;font-family:inherit;background:var(--paper-dim);color:var(--ink);
+}
+.field input:focus, .field select:focus{border-color:var(--pine);outline:none;background:var(--white);}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 16px;}
+
+.data-table{width:100%;border-collapse:collapse;margin-top:10px;}
+.data-table th{text-align:left;font-size:.82rem;color:var(--ink-soft);border-bottom:2px solid var(--line);padding:8px;}
+.data-table td{padding:10px 8px;border-bottom:1px solid var(--line);font-size:.95rem;}
+
+.chart-wrap{position:relative;height:280px;margin-top:10px;}
+
+.pill-toggle{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.pill-toggle button{
+  background:var(--white);border:2px solid var(--line);border-radius:var(--radius-pill);
+  padding:8px 16px;font-weight:600;font-size:.88rem;cursor:pointer;color:var(--ink-soft);
+}
+.pill-toggle button.active{border-color:var(--sage);background:var(--sage-tint);color:#2F4F37;}
+
+.empty-state{
+  text-align:center;padding:30px 20px;color:var(--ink-soft);
+}
+
+@media (max-width: 980px){
+  .grid-2{grid-template-columns:1fr;}
+  .grid-3{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+}
+@media (max-width: 880px){
+  .sidebar{display:none;}
+  .main-col{padding:20px 16px 92px 16px;}
+  .bottom-nav{display:block;}
+  body{font-size:17px;}
+  h1{font-size:1.6rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Desktop sidebar -->
+  <nav class="sidebar" aria-label="Navegación principal">
+    <div class="brand">
+      <div class="brand-mark">🏔️</div>
+      <div class="brand-text">Entrenador Digital<br>Híbrido<small>Plan de 12 semanas</small></div>
+    </div>
+    <button class="nav-btn active" data-view="dashboard"><span class="ic">🏠</span> Panel de control</button>
+    <button class="nav-btn" data-view="warmup"><span class="ic">⏱️</span> Calentamiento</button>
+    <button class="nav-btn" data-view="calendar"><span class="ic">📅</span> Calendario semanal</button>
+    <button class="nav-btn" data-view="cooldown"><span class="ic">🧘</span> Vuelta a la calma</button>
+    <button class="nav-btn" data-view="tracker"><span class="ic">📊</span> Registro y progreso</button>
+  </nav>
+
+  <main class="main-col" id="main-col">
+    <!-- Views injected here -->
+  </main>
+</div>
+
+<!-- Mobile bottom nav -->
+<nav class="bottom-nav" aria-label="Navegación móvil">
+  <div class="bottom-nav-inner">
+    <button class="bn-btn active" data-view="dashboard"><span class="ic">🏠</span>Panel</button>
+    <button class="bn-btn" data-view="warmup"><span class="ic">⏱️</span>Calent.</button>
+    <button class="bn-btn" data-view="calendar"><span class="ic">📅</span>Plan</button>
+    <button class="bn-btn" data-view="cooldown"><span class="ic">🧘</span>Estiram.</button>
+    <button class="bn-btn" data-view="tracker"><span class="ic">📊</span>Progreso</button>
+  </div>
+</nav>
+
+<!-- Video modal -->
+<div class="modal-overlay" id="video-modal">
+  <div class="modal-box">
+    <button class="modal-close" id="video-modal-close" aria-label="Cerrar">✕</button>
+    <h3 id="video-modal-title">Vídeo explicativo</h3>
+    <p id="video-modal-desc" style="color:var(--ink-soft);">Se abrirá en una pestaña nueva de YouTube para reproducirlo con comodidad.</p>
+    <a class="btn btn-primary btn-block" id="video-modal-link" href="#" target="_blank" rel="noopener">▶ Ver vídeo en YouTube</a>
+  </div>
+</div>
+
+<script>
+/* ====================== DATA & STATE ====================== */
+const YT = {
+  sentadillaSilla: "https://www.youtube.com/watch?v=VqPjHTt78sQ",
+  remoBanda: "https://www.youtube.com/watch?v=RBs3SqAwXOs",
+  planchaRodillas: "https://www.youtube.com/watch?v=h_8LKL9inEo",
+  flexionInclinada: "https://www.youtube.com/watch?v=uCTbmCjiF7Y"
+};
+function ytSearch(q){ return "https://www.youtube.com/results?search_query=" + encodeURIComponent(q); }
+
+// Exercise sets per mesocycle (month) and day. "deload" version applied on week 4 (30-40% volume reduction).
+const PROGRAM = {
+  1: {
+    label: "Mes 1 · Adaptación y Fuerza Base",
+    range: "Semanas 1–4",
+    intro: "Aprendizaje del movimiento, activación de agarre y construcción de una base de fuerza segura. RPE 6–7 (esfuerzo moderado, con margen).",
+    days: {
+      lunes: {
+        title: "Fuerza & Calistenia",
+        sub: "Ejercicios compuestos · RPE 6–7",
+        cls: "",
+        exercises: [
+          {name:"Sentadilla asistida con silla", note:"Baja controlado, toca el asiento sin sentarte del todo", sets:3, reps:"10–12", rest:"90 s", url:YT.sentadillaSilla},
+          {name:"Flexiones inclinadas (manos en banco/mesa)", note:"Cuerpo en línea recta, baja el pecho hacia el borde", sets:3, reps:"8–10", rest:"90 s", url:YT.flexionInclinada},
+          {name:"Remo con banda elástica", note:"Codos pegados al cuerpo, aprieta omóplatos", sets:3, reps:"12–15", rest:"60 s", url:YT.remoBanda},
+          {name:"Plancha sobre rodillas", note:"Abdomen firme, cadera alineada", sets:3, reps:"20–30 s", rest:"45 s", url:YT.planchaRodillas},
+        ]
+      },
+      miercoles: {
+        title: "Escalada, Agarre & Core",
+        sub: "Fuerza de dedos y antebrazo, tronco estable",
+        cls:"mid",
+        exercises: [
+          {name:"Dead hangs (colgarse de barra)", note:"Brazos ligeramente flexionados, hombros activos, pies con apoyo si es necesario", sets:4, reps:"10–15 s", rest:"90 s", url:ytSearch("dead hang colgarse de barra tecnica principiantes")},
+          {name:"Elevaciones de rodillas (colgado o de pie)", note:"Sube las rodillas al pecho controlando el balanceo", sets:3, reps:"8–10", rest:"60 s", url:ytSearch("elevaciones de rodillas core ejercicio")},
+          {name:"Plancha de rodillas", note:"Mantén la espalda recta, respira de forma continua", sets:3, reps:"20–30 s", rest:"45 s", url:YT.planchaRodillas},
+          {name:"Cierres de puño con toalla", note:"Activación de agarre, aprieta 3 s y suelta", sets:3, reps:"12", rest:"45 s", url:ytSearch("ejercicios de agarre con toalla antebrazo")},
+        ]
+      },
+      viernes: {
+        title: "Atletismo & Resistencia",
+        sub: "Técnica de carrera y rodaje suave en Zona 2",
+        cls:"end",
+        exercises: [
+          {name:"Caminata rápida de activación", note:"Ritmo cómodo, brazos relajados", sets:1, reps:"5 min", rest:"—", url:ytSearch("tecnica de caminata correcta")},
+          {name:"Técnica de carrera (skipping suave, talones al glúteo)", note:"Movimientos cortos y controlados, sin buscar velocidad", sets:2, reps:"20 m", rest:"60 s", url:ytSearch("ejercicios tecnica de carrera para principiantes")},
+          {name:"Rodaje suave Zona 2 (\"prueba de la charla\")", note:"Debes poder mantener una conversación sin ahogarte", sets:1, reps:"15–20 min", rest:"—", url:ytSearch("que es la zona 2 de entrenamiento cardiovascular")},
+          {name:"Movilidad de tobillo", note:"Círculos y flexo-extensión de tobillo", sets:2, reps:"10 por lado", rest:"30 s", url:ytSearch("movilidad de tobillo ejercicios")},
+        ]
+      }
+    }
+  },
+  2: {
+    label: "Mes 2 · Fuerza de Tracción y Agarre",
+    range: "Semanas 5–8",
+    intro: "Se incrementa el tiempo bajo tensión en agarre y tracción, y se añade algo más de exigencia en fuerza y carrera. Sigue aplicando la regla del 2-por-2.",
+    days: {
+      lunes: {
+        title: "Fuerza & Calistenia",
+        sub: "Ejercicios compuestos · RPE 6–7",
+        cls:"",
+        exercises: [
+          {name:"Sentadilla asistida (apoyo parcial en silla)", note:"Reduce progresivamente el apoyo en las manos", sets:4, reps:"10–12", rest:"90 s", url:YT.sentadillaSilla},
+          {name:"Flexiones inclinadas (menor inclinación)", note:"Acerca las manos a una superficie más baja", sets:4, reps:"8–10", rest:"90 s", url:YT.flexionInclinada},
+          {name:"Remo con banda elástica (mayor tensión)", note:"Usa una banda de mayor resistencia si es posible", sets:4, reps:"12–15", rest:"60 s", url:YT.remoBanda},
+          {name:"Plancha con antebrazos sobre rodillas", note:"Aumenta el tiempo mantenido respecto al mes 1", sets:3, reps:"30–40 s", rest:"45 s", url:YT.planchaRodillas},
+        ]
+      },
+      miercoles: {
+        title: "Escalada, Agarre & Core",
+        sub: "Fuerza de dedos y antebrazo, tronco estable",
+        cls:"mid",
+        exercises: [
+          {name:"Dead hangs (mayor duración)", note:"Aumenta el tiempo colgado de forma progresiva", sets:4, reps:"15–20 s", rest:"90 s", url:ytSearch("dead hang progresion fuerza de agarre")},
+          {name:"Suspensión activa de hombros (scapular pulls)", note:"Desde la barra, sube y baja los hombros sin flexionar codos", sets:3, reps:"6–8", rest:"75 s", url:ytSearch("scapular pulls barra dominadas")},
+          {name:"Elevaciones de rodillas colgado", note:"Controla la bajada, evita el balanceo", sets:3, reps:"10", rest:"60 s", url:ytSearch("elevaciones de rodillas colgado de barra")},
+          {name:"Pinza de agarre con peso ligero", note:"Sujeta un objeto con los dedos en pinza, aguanta isométrico", sets:3, reps:"15–20 s", rest:"45 s", url:ytSearch("ejercicio de pinza de agarre para escalada")},
+        ]
+      },
+      viernes: {
+        title: "Atletismo & Resistencia",
+        sub: "Técnica de carrera y rodaje suave en Zona 2",
+        cls:"end",
+        exercises: [
+          {name:"Caminata rápida de activación", note:"Ritmo cómodo, brazos relajados", sets:1, reps:"5 min", rest:"—", url:ytSearch("tecnica de caminata correcta")},
+          {name:"Intervalos trote suave / caminata", note:"Alterna trote muy suave y caminata sin perder el aliento", sets:5, reps:"1 min trote / 1 min camina", rest:"—", url:ytSearch("intervalos caminata trote principiantes")},
+          {name:"Rodaje en Zona 2 con cuestas suaves", note:"Incorpora algún desnivel ligero manteniendo el ritmo conversacional", sets:1, reps:"20–25 min", rest:"—", url:ytSearch("entrenamiento zona 2 cuestas suaves")},
+          {name:"Movilidad de cadera", note:"Círculos de cadera y zancada dinámica suave", sets:2, reps:"10 por lado", rest:"30 s", url:ytSearch("movilidad de cadera ejercicios")},
+        ]
+      }
+    }
+  },
+  3: {
+    label: "Mes 3 · Integración Híbrida",
+    range: "Semanas 9–12",
+    intro: "Se integran los tres bloques (fuerza, agarre y resistencia) al nivel más exigente del plan, siempre respetando la técnica y la escucha corporal.",
+    days: {
+      lunes: {
+        title: "Fuerza & Calistenia",
+        sub: "Ejercicios compuestos · RPE 6–7",
+        cls:"",
+        exercises: [
+          {name:"Sentadilla búlgara asistida", note:"Un pie apoyado atrás en silla, sujétate si necesitas equilibrio", sets:3, reps:"8–10 por pierna", rest:"90 s", url:ytSearch("sentadilla bulgara asistida principiantes")},
+          {name:"Flexiones estándar (progresión final)", note:"En el suelo si la técnica lo permite; si no, mantén la inclinación", sets:4, reps:"8–12", rest:"90 s", url:YT.flexionInclinada},
+          {name:"Remo con banda elástica + press", note:"Combina el remo con una extensión de brazos hacia adelante", sets:4, reps:"12–15", rest:"60 s", url:YT.remoBanda},
+          {name:"Plancha completa (apoyo en manos)", note:"Progresión desde la plancha de rodillas si la técnica es correcta", sets:3, reps:"30–45 s", rest:"45 s", url:YT.planchaRodillas},
+        ]
+      },
+      miercoles: {
+        title: "Escalada, Agarre & Core",
+        sub: "Fuerza de dedos y antebrazo, tronco estable",
+        cls:"mid",
+        exercises: [
+          {name:"Dead hang + \"candado\" (leve flexión de codos)", note:"Sostén una posición de tracción parcial", sets:4, reps:"10–15 s", rest:"90 s", url:ytSearch("dead hang candado flexion de codos escalada")},
+          {name:"Tracción asistida / negativas", note:"Baja lentamente desde la posición alta si tienes barra o banda de asistencia", sets:3, reps:"3–5", rest:"90 s", url:ytSearch("negativas dominadas asistidas principiantes")},
+          {name:"Plancha lateral sobre rodillas", note:"Alterna lado derecho e izquierdo", sets:3, reps:"15–20 s por lado", rest:"45 s", url:ytSearch("plancha lateral de rodillas ejercicio")},
+          {name:"Pinza de agarre + cierre de puño combinado", note:"Circuito de agarre para terminar la sesión", sets:3, reps:"15 s + 12 reps", rest:"45 s", url:ytSearch("circuito de fuerza de agarre para escalada")},
+        ]
+      },
+      viernes: {
+        title: "Atletismo & Resistencia",
+        sub: "Técnica de carrera y rodaje suave en Zona 2",
+        cls:"end",
+        exercises: [
+          {name:"Caminata rápida de activación", note:"Ritmo cómodo, brazos relajados", sets:1, reps:"5 min", rest:"—", url:ytSearch("tecnica de caminata correcta")},
+          {name:"Técnica de carrera (skipping, taloneo, zancada)", note:"Ejercicios cortos de coordinación antes del rodaje", sets:2, reps:"20–25 m", rest:"60 s", url:ytSearch("ejercicios tecnica de carrera para principiantes")},
+          {name:"Rodaje continuo en Zona 2", note:"Ritmo conversacional sostenido, mayor duración que meses anteriores", sets:1, reps:"25–30 min", rest:"—", url:ytSearch("rodaje continuo zona 2 principiantes")},
+          {name:"Estiramiento dinámico final de piernas", note:"Zancadas suaves y balanceos de pierna", sets:2, reps:"8 por lado", rest:"30 s", url:ytSearch("estiramiento dinamico piernas post carrera")},
+        ]
+      }
+    }
+  }
+};
+
+const DAY_ORDER = ["lunes","miercoles","viernes"];
+
+// Warm-up protocol
+const WARMUP_BLOCKS = [
+  { title:"Movilidad articular general", icon:"🔄", items:[
+    {name:"Rotaciones de cuello", detail:"4 giros suaves a cada lado, sin forzar", timer:30},
+    {name:"Círculos de hombros", detail:"10 hacia adelante y 10 hacia atrás", timer:30},
+    {name:"Rotaciones de cadera", detail:"8 círculos hacia cada lado", timer:30},
+    {name:"Balanceo de piernas", detail:"10 balanceos suaves por pierna, sujeto a un apoyo", timer:40},
+  ]},
+  { title:"Activación de manos, muñecas y dedos (específico escalada)", icon:"🖐️", items:[
+    {name:"Rotaciones de muñeca", detail:"10 giros en cada sentido, ambas manos", timer:30},
+    {name:"Estiramiento dinámico de dedos", detail:"Abre y cierra la mano en abanico, 12 repeticiones", timer:30},
+    {name:"Cierres de puño progresivos", detail:"Aprieta 2 s y suelta, 15 repeticiones por mano", timer:40},
+    {name:"Extensión de dedos con banda o goma", detail:"Abre los dedos contra una resistencia ligera, 12 repeticiones", timer:30},
+  ]},
+  { title:"Activación cardiovascular ligera", icon:"🚶", items:[
+    {name:"Caminata suave", detail:"Ritmo cómodo para elevar la temperatura corporal", timer:180},
+    {name:"Movilidad de tobillo en marcha", detail:"Camina apoyando bien toda la planta del pie", timer:60},
+  ]},
+];
+
+// Cool-down protocol
+const COOLDOWN_BLOCKS = [
+  { title:"Estiramientos estáticos", icon:"🧘", items:[
+    {name:"Estiramiento de hombros (cruzado)", detail:"Lleva un brazo cruzado al pecho, sujeta con el otro", timer:30},
+    {name:"Estiramiento de antebrazos y flexores de los dedos", detail:"Extiende el brazo, palma hacia arriba, tira suavemente de los dedos hacia atrás", timer:30},
+    {name:"Estiramiento de columna (gato-camello sentado o de pie)", detail:"Alterna flexión y extensión suave de la espalda", timer:40},
+    {name:"Estiramiento de cuádriceps", detail:"De pie, lleva el talón hacia el glúteo sujetando el tobillo", timer:30},
+    {name:"Estiramiento de gemelos", detail:"Apoya las manos en una pared, un pie atrás con el talón en el suelo", timer:30},
+  ]},
+  { title:"Respiración y relajación final", icon:"🌬️", items:[
+    {name:"Respiración diafragmática", detail:"Inhala 4 s por la nariz, exhala 6 s por la boca", timer:60},
+  ]},
+];
+
+/* ====================== STORAGE HELPERS ====================== */
+const LS_PROGRESS = "edh_progress_v1";
+const LS_BODY = "edh_tracker_body_v1";
+const LS_ACTIVITY = "edh_tracker_activity_v1";
+
+function loadJSON(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }
+  catch(e){ console.error("No se pudo guardar", e); }
+}
+let progress = loadJSON(LS_PROGRESS, {});
+let bodyLog = loadJSON(LS_BODY, []);
+let activityLog = loadJSON(LS_ACTIVITY, []);
+
+function sessionId(month, week, day){ return `m${month}-w${week}-${day}`; }
+function totalSessions(){ return 3 * 12; } // 3 dias x 12 semanas
+function completedSessions(){ return Object.values(progress).filter(Boolean).length; }
+
+/* ====================== VIDEO MODAL ====================== */
+const videoModal = document.getElementById("video-modal");
+const videoModalTitle = document.getElementById("video-modal-title");
+const videoModalLink = document.getElementById("video-modal-link");
+function openVideoModal(name, url){
+  videoModalTitle.textContent = name;
+  videoModalLink.href = url;
+  videoModal.classList.add("open");
+}
+document.getElementById("video-modal-close").addEventListener("click", ()=> videoModal.classList.remove("open"));
+videoModal.addEventListener("click", (e)=>{ if(e.target === videoModal) videoModal.classList.remove("open"); });
+document.addEventListener("keydown", (e)=>{ if(e.key === "Escape") videoModal.classList.remove("open"); });
+
+/* ====================== SIMPLE TIMER (for warmup/cooldown steps) ====================== */
+function formatTime(s){
+  const m = Math.floor(s/60), sec = s%60;
+  return (m>0 ? m+":"+String(sec).padStart(2,"0") : sec+" s");
+}
+function attachTimerHandlers(root){
+  root.querySelectorAll("[data-timer-btn]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      let remaining = parseInt(btn.dataset.seconds, 10);
+      if(btn._interval){ clearInterval(btn._interval); btn._interval=null; btn.textContent="▶ Iniciar"; return; }
+      btn.textContent = "⏸ " + formatTime(remaining);
+      btn._interval = setInterval(()=>{
+        remaining -= 1;
+        if(remaining <= 0){
+          clearInterval(btn._interval); btn._interval=null;
+          btn.textContent = "✔ Hecho";
+          setTimeout(()=>{ btn.textContent = "▶ Iniciar"; }, 1500);
+          return;
+        }
+        btn.textContent = "⏸ " + formatTime(remaining);
+      }, 1000);
+    });
+  });
+}
+
+/* ====================== VIEW: DASHBOARD ====================== */
+function renderDashboard(){
+  const done = completedSessions();
+  const total = totalSessions();
+  const pct = Math.round((done/total)*100);
+  const currentWeek = Math.min(12, Math.floor(done/3) + 1);
+
+  return `
+  <div class="page-head">
+    <div class="eyebrow">Panel de control</div>
+    <h1>Hola, bienvenido a tu plan de mantenimiento físico</h1>
+    <p style="color:var(--ink-soft);">Programa de 12 semanas · 3 sesiones no consecutivas por semana · Calistenia, escalada/agarre y atletismo de bajo impacto.</p>
+  </div>
+
+  <div class="med-banner">
+    <div class="ic">⚕️</div>
+    <div>
+      <h3>Antes de empezar: chequeo médico deportivo obligatorio</h3>
+      <p style="margin-bottom:.4em;">Este plan está pensado para hombres mayores de 50 años que retoman la actividad física. Antes de la Semana 1, se recomienda encarecidamente acudir a una revisión médico-deportiva que incluya:</p>
+      <ul>
+        <li>Electrocardiograma (ECG) en reposo</li>
+        <li>Prueba de esfuerzo / ergometría</li>
+        <li>Valoración del aparato locomotor (articulaciones, columna y equilibrio)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card principle-card">
+      <h3><span class="tag">Progresión</span></h3>
+      <h3 style="margin-top:6px;">La regla del 2‑por‑2</h3>
+      <p style="color:var(--ink-soft);">Si consigues completar 2 repeticiones extra por encima del objetivo, en 2 sesiones seguidas, en todas las series de un ejercicio, es el momento de aumentar ligeramente la dificultad o la carga en la siguiente sesión. Progresar despacio protege tus articulaciones y tendones.</p>
+    </div>
+    <div class="card principle-card alt">
+      <h3><span class="tag ochre">Recuperación</span></h3>
+      <h3 style="margin-top:6px;">Recuperación activa</h3>
+      <p style="color:var(--ink-soft);">Los días sin entrenamiento programado no son días de sedentarismo total: un paseo suave, estiramientos ligeros o movilidad ayudan a mantener la circulación, reducir la rigidez y llegar en mejores condiciones a la siguiente sesión.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h3>Progreso general del plan</h3>
+    <p style="color:var(--ink-soft);">Semana estimada actual: <strong>${currentWeek} de 12</strong> · Sesiones completadas: <strong>${done} de ${total}</strong></p>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    <p style="margin-top:10px;font-weight:700;color:var(--pine-dark);">${pct}% del programa completado</p>
+  </div>
+
+  <div class="grid-3" style="margin-top:18px;">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:1.9rem;">🏋️</div>
+      <h3 style="margin-top:4px;">Mes 1</h3>
+      <p style="color:var(--ink-soft);font-size:.92rem;">Adaptación y fuerza base</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:1.9rem;">🧗</div>
+      <h3 style="margin-top:4px;">Mes 2</h3>
+      <p style="color:var(--ink-soft);font-size:.92rem;">Tracción y agarre</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:1.9rem;">🏃</div>
+      <h3 style="margin-top:4px;">Mes 3</h3>
+      <p style="color:var(--ink-soft);font-size:.92rem;">Integración híbrida</p>
+    </div>
+  </div>
+  `;
+}
+
+/* ====================== VIEW: WARMUP / COOLDOWN (shared renderer) ====================== */
+function renderProtocol(blocks, headTitle, headDesc){
+  let html = `
+  <div class="page-head">
+    <div class="eyebrow">${headTitle.eyebrow}</div>
+    <h1>${headTitle.title}</h1>
+    <p style="color:var(--ink-soft);">${headDesc}</p>
+  </div>`;
+
+  blocks.forEach((block, bi)=>{
+    html += `<div class="card protocol-block">
+      <h3><span>${block.icon}</span> ${block.title}</h3>
+      <ul class="step-list">`;
+    block.items.forEach((item, ii)=>{
+      const id = `pstep-${bi}-${ii}`;
+      html += `
+      <li class="step-item">
+        <input type="checkbox" class="step-check" id="${id}">
+        <div class="step-body" style="flex:1;">
+          <label for="${id}"><b>${item.name}</b></label>
+          <span>${item.detail}</span>
+        </div>
+        <button class="btn btn-outline btn-sm timer-btn" data-timer-btn data-seconds="${item.timer}">▶ Iniciar</button>
+      </li>`;
+    });
+    html += `</ul></div>`;
+  });
+  return html;
+}
+
+/* ====================== VIEW: CALENDAR ====================== */
+let calendarMonth = 1; // 1,2,3
+
+function exerciseRow(ex, month, week, day, idx){
+  return `
+  <tr>
+    <td><span class="ex-name">${ex.name}</span><span class="ex-note">${ex.note}</span></td>
+    <td>${ex.sets}</td>
+    <td>${ex.reps}</td>
+    <td>${ex.rest}</td>
+    <td><button class="btn btn-video btn-sm" data-video-name="${ex.name.replace(/"/g,'&quot;')}" data-video-url="${ex.url}">▶ Vídeo</button></td>
+  </tr>`;
+}
+
+function dayCard(dayKey, dayData, month, week, isDeload){
+  const sid = sessionId(month, week, dayKey);
+  const checked = progress[sid] ? "checked" : "";
+  const dayLabel = dayKey.charAt(0).toUpperCase()+dayKey.slice(1);
+  const deloadNote = isDeload ? `<p style="color:#7A5A24;font-size:.9rem;margin-top:-6px;">Semana de descarga: reduce el volumen un 30–40% (menos series o repeticiones de las indicadas).</p>` : "";
+  return `
+  <div class="card day-card ${dayData.cls}">
+    <div class="day-card-head">
+      <div>
+        <h3>${dayLabel} · ${dayData.title}</h3>
+        <div class="sub">${dayData.sub}</div>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="chk-${sid}" data-session="${sid}" ${checked}>
+        <label for="chk-${sid}">Sesión completada</label>
+      </div>
+    </div>
+    ${deloadNote}
+    <div style="overflow-x:auto;">
+    <table class="exercise-table">
+      <thead><tr><th>Ejercicio</th><th>Series</th><th>Reps / Tiempo</th><th>Descanso</th><th>Vídeo</th></tr></thead>
+      <tbody>
+        ${dayData.exercises.map((ex,i)=>exerciseRow(ex, month, week, dayKey, i)).join("")}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+}
+
+function renderCalendar(){
+  const monthData = PROGRAM[calendarMonth];
+  let html = `
+  <div class="page-head">
+    <div class="eyebrow">Calendario semanal e interactivo</div>
+    <h1>Programación de 3 meses</h1>
+    <p style="color:var(--ink-soft);">Estructura fija: Lunes fuerza y calistenia · Miércoles escalada, agarre y core · Viernes atletismo y resistencia.</p>
+  </div>
+  <div class="month-tabs">
+    ${[1,2,3].map(m=>`<button class="month-tab ${m===calendarMonth?'active':''}" data-month="${m}">Mes ${m}</button>`).join("")}
+  </div>
+  <div class="card" style="margin-bottom:22px;">
+    <h2>${monthData.label}</h2>
+    <p style="color:var(--ink-soft);">${monthData.range} · ${monthData.intro}</p>
+  </div>`;
+
+  const weekStart = (calendarMonth-1)*4 + 1;
+  for(let w=0; w<4; w++){
+    const weekNum = weekStart + w;
+    const isDeload = (w === 3); // week 4 of each mesocycle
+    html += `<div class="week-block">
+      <div class="week-head">
+        <h3>Semana ${weekNum}</h3>
+        ${isDeload ? `<span class="deload-badge">Semana de descarga · −30/40% volumen</span>` : ""}
+      </div>
+      ${DAY_ORDER.map(dk => dayCard(dk, monthData.days[dk], calendarMonth, weekNum, isDeload)).join("")}
+    </div>`;
+  }
+  return html;
+}
+
+/* ====================== VIEW: TRACKER ====================== */
+let weightChart=null, measureChart=null;
+
+function renderTracker(){
+  const bodyRows = bodyLog.slice().sort((a,b)=> a.date.localeCompare(b.date));
+  const activityRows = activityLog.slice().sort((a,b)=> b.date.localeCompare(a.date));
+
+  return `
+  <div class="page-head">
+    <div class="eyebrow">Registro y tracker de progreso</div>
+    <h1>Tu evolución a lo largo del plan</h1>
+    <p style="color:var(--ink-soft);">Registra tus medidas semanalmente y tu actividad diaria fuera de las sesiones para ver tu progreso real.</p>
+  </div>
+
+  <div class="card">
+    <h3>Registrar medidas corporales</h3>
+    <form id="body-form">
+      <div class="form-grid">
+        <div class="field"><label for="bf-date">Fecha</label><input type="date" id="bf-date" required></div>
+        <div class="field"><label for="bf-weight">Peso (kg)</label><input type="number" step="0.1" min="30" max="250" id="bf-weight" required></div>
+        <div class="field"><label for="bf-waist">Cintura (cm)</label><input type="number" step="0.5" min="40" max="200" id="bf-waist"></div>
+        <div class="field"><label for="bf-arm">Brazo (cm)</label><input type="number" step="0.5" min="15" max="70" id="bf-arm"></div>
+        <div class="field"><label for="bf-thigh">Muslo (cm)</label><input type="number" step="0.5" min="25" max="100" id="bf-thigh"></div>
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar registro</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Evolución del peso</h3>
+    <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h3>Evolución de medidas (cm)</h3>
+    <div class="chart-wrap"><canvas id="measure-chart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h3>Historial de medidas</h3>
+    ${bodyRows.length===0 ? `<div class="empty-state">Aún no hay registros. Añade tu primera medición arriba.</div>` : `
+    <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead><tr><th>Fecha</th><th>Peso (kg)</th><th>Cintura</th><th>Brazo</th><th>Muslo</th></tr></thead>
+      <tbody>
+        ${bodyRows.slice().reverse().map(r=>`<tr><td>${r.date}</td><td>${r.weight}</td><td>${r.waist ?? "—"}</td><td>${r.arm ?? "—"}</td><td>${r.thigh ?? "—"}</td></tr>`).join("")}
+      </tbody>
+    </table>
+    </div>`}
+  </div>
+
+  <div class="card">
+    <h3>Registro diario de actividad externa</h3>
+    <form id="activity-form">
+      <div class="form-grid">
+        <div class="field"><label for="af-date">Fecha</label><input type="date" id="af-date" required></div>
+        <div class="field"><label for="af-type">Actividad</label>
+          <select id="af-type">
+            <option value="Caminata">Caminata</option>
+            <option value="Bicicleta">Bicicleta</option>
+            <option value="Otra">Otra</option>
+          </select>
+        </div>
+        <div class="field"><label for="af-steps">Pasos</label><input type="number" min="0" id="af-steps"></div>
+        <div class="field"><label for="af-km">Distancia (km)</label><input type="number" step="0.1" min="0" id="af-km"></div>
+        <div class="field"><label for="af-time">Tiempo (min)</label><input type="number" min="0" id="af-time"></div>
+      </div>
+      <button type="submit" class="btn btn-primary">Añadir actividad</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Historial de actividad</h3>
+    ${activityRows.length===0 ? `<div class="empty-state">Aún no has registrado actividades externas.</div>` : `
+    <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead><tr><th>Fecha</th><th>Actividad</th><th>Pasos</th><th>Km</th><th>Minutos</th></tr></thead>
+      <tbody>
+        ${activityRows.map(r=>`<tr><td>${r.date}</td><td>${r.type}</td><td>${r.steps ?? "—"}</td><td>${r.km ?? "—"}</td><td>${r.time ?? "—"}</td></tr>`).join("")}
+      </tbody>
+    </table>
+    </div>`}
+  </div>
+
+  <div class="card">
+    <h3>Plantilla de seguimiento en Excel</h3>
+    <p style="color:var(--ink-soft);">Si prefieres llevar tu registro en una hoja de cálculo, descarga esta plantilla de plan de entrenamiento y rutina.</p>
+    <a class="btn btn-ochre" href="https://plantisheets.com/wp-content/uploads/2025/04/plantilla-excel-plan-de-entrenamiento-y-rutina-gimnasio.zip" target="_blank" rel="noopener">⬇ Descargar plantilla Excel (.zip)</a>
+  </div>
+  `;
+}
+
+function drawTrackerCharts(){
+  const bodyRows = bodyLog.slice().sort((a,b)=> a.date.localeCompare(b.date));
+  const labels = bodyRows.map(r=>r.date);
+
+  const wCanvas = document.getElementById("weight-chart");
+  const mCanvas = document.getElementById("measure-chart");
+  if(!wCanvas || !mCanvas) return;
+
+  if(weightChart) weightChart.destroy();
+  if(measureChart) measureChart.destroy();
+
+  weightChart = new Chart(wCanvas, {
+    type:"line",
+    data:{ labels, datasets:[{ label:"Peso (kg)", data:bodyRows.map(r=>r.weight), borderColor:"#2F5D50", backgroundColor:"rgba(47,93,80,.12)", tension:.3, fill:true, pointRadius:4 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ ticks:{ color:"#6B6559" } }, x:{ ticks:{ color:"#6B6559" } } } }
+  });
+
+  measureChart = new Chart(mCanvas, {
+    type:"line",
+    data:{ labels, datasets:[
+      { label:"Cintura", data:bodyRows.map(r=>r.waist), borderColor:"#B8863B", tension:.3, pointRadius:4 },
+      { label:"Brazo", data:bodyRows.map(r=>r.arm), borderColor:"#4C7A57", tension:.3, pointRadius:4 },
+      { label:"Muslo", data:bodyRows.map(r=>r.thigh), borderColor:"#C1502E", tension:.3, pointRadius:4 },
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{color:"#2A2721"}}}, scales:{ y:{ ticks:{ color:"#6B6559" } }, x:{ ticks:{ color:"#6B6559" } } } }
+  });
+}
+
+/* ====================== ROUTER ====================== */
+const VIEWS = {
+  dashboard: { render: renderDashboard, after: null },
+  warmup: { render: ()=> renderProtocol(WARMUP_BLOCKS, {eyebrow:"Antes de entrenar", title:"Calentamiento y activación (10–15 min)"}, "Protocolo interactivo previo a cada sesión: moviliza articulaciones, activa manos y muñecas para la escalada, y eleva progresivamente el pulso."), after: (root)=> attachTimerHandlers(root) },
+  calendar: { render: renderCalendar, after: (root)=> attachCalendarHandlers(root) },
+  cooldown: { render: ()=> renderProtocol(COOLDOWN_BLOCKS, {eyebrow:"Después de entrenar", title:"Vuelta a la calma y estiramientos (10 min)"}, "Protocolo posterior a cada sesión para relajar la musculatura, reducir la rigidez y facilitar la recuperación."), after: (root)=> attachTimerHandlers(root) },
+  tracker: { render: renderTracker, after: (root)=> attachTrackerHandlers(root) },
+};
+
+function attachCalendarHandlers(root){
+  root.querySelectorAll("[data-month]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      calendarMonth = parseInt(btn.dataset.month, 10);
+      navigateTo("calendar");
+    });
+  });
+  root.querySelectorAll("[data-video-url]").forEach(btn=>{
+    btn.addEventListener("click", ()=> openVideoModal(btn.dataset.videoName, btn.dataset.videoUrl));
+  });
+  root.querySelectorAll("[data-session]").forEach(chk=>{
+    chk.addEventListener("change", ()=>{
+      progress[chk.dataset.session] = chk.checked;
+      saveJSON(LS_PROGRESS, progress);
+    });
+  });
+}
+
+function attachTrackerHandlers(root){
+  drawTrackerCharts();
+  const bf = document.getElementById("body-form");
+  bf.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const entry = {
+      date: document.getElementById("bf-date").value,
+      weight: parseFloat(document.getElementById("bf-weight").value),
+      waist: parseFloat(document.getElementById("bf-waist").value) || null,
+      arm: parseFloat(document.getElementById("bf-arm").value) || null,
+      thigh: parseFloat(document.getElementById("bf-thigh").value) || null,
+    };
+    if(!entry.date || isNaN(entry.weight)) return;
+    bodyLog.push(entry);
+    saveJSON(LS_BODY, bodyLog);
+    navigateTo("tracker");
+  });
+  const af = document.getElementById("activity-form");
+  af.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const entry = {
+      date: document.getElementById("af-date").value,
+      type: document.getElementById("af-type").value,
+      steps: parseInt(document.getElementById("af-steps").value) || null,
+      km: parseFloat(document.getElementById("af-km").value) || null,
+      time: parseInt(document.getElementById("af-time").value) || null,
+    };
+    if(!entry.date) return;
+    activityLog.push(entry);
+    saveJSON(LS_ACTIVITY, activityLog);
+    navigateTo("tracker");
+  });
+}
+
+const mainCol = document.getElementById("main-col");
+function navigateTo(viewName){
+  const view = VIEWS[viewName];
+  if(!view) return;
+  mainCol.innerHTML = `<div class="view active">${view.render()}</div>`;
+  document.querySelectorAll(".nav-btn, .bn-btn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.view === viewName);
+  });
+  if(view.after) view.after(mainCol);
+  window.scrollTo({top:0, behavior:"instant"});
+}
+
+document.querySelectorAll(".nav-btn, .bn-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=> navigateTo(btn.dataset.view));
+});
+
+navigateTo("dashboard");
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(err=>{
+      console.warn("No se pudo registrar el service worker:", err);
+    });
+  });
+}
+</script>
+</body>
+</html>
